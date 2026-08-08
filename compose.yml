@@ -101,7 +101,7 @@ services:
       context: ./airflow
       dockerfile: Dockerfile
     container_name: rag-airflow
-    # user: "50000:0"  # Uncomment for WSL/Ubuntu, comment out for Mac
+    user: "50000:0"  # Uncomment for WSL/Ubuntu, comment out for Mac
     depends_on:
       postgres:
         condition: service_healthy
@@ -117,6 +117,8 @@ services:
       - OPENSEARCH__HOST=http://opensearch:9200
       - OLLAMA_HOST=http://ollama:11434
       - REDIS__HOST=redis
+      - AIRFLOW_USER= ${AIRFLOW_USER}
+      - AIRFLOW_PASSWORD= ${AIRFLOW_PASSWORD}
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - airflow_logs:/opt/airflow/logs
