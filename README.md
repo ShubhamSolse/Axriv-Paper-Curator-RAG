@@ -32,15 +32,15 @@ Fetches `cs.AI` papers from arXiv, parses and chunks them, indexes them for hybr
                          ┌──────────────────────────────────────────────┐
                          │                arXiv API                     │
                          └───────────────────────┬──────────────────────┘
-                                                  │ fetch metadata + PDFs
-                                                  ▼
+                                                 │ fetch metadata + PDFs
+                                                 ▼
                          ┌──────────────────────────────────────────────┐
-                         │   Airflow DAGs — fetch → parse → chunk →      │
-                         │   embed → index  (orchestration layer)        │
+                         │   Airflow DAGs — fetch → parse → chunk →     │
+                         │   embed → index  (orchestration layer)       │
                          └───────────────────────┬──────────────────────┘
-                                                  │
-                    ┌─────────────────────────────┼─────────────────────────────┐
-                    ▼                             ▼                             ▼
+                                                 │
+                    ┌────────────────────────────┼─────────────────────────────┐
+                    ▼                            ▼                             ▼
              Docling PDF Parser          Jina Embeddings API             PostgreSQL
            (text + table extraction)      (1024-dim vectors)          (paper metadata)
                     │                             │
@@ -49,23 +49,23 @@ Fetches `cs.AI` papers from arXiv, parses and chunks them, indexes them for hybr
                        OpenSearch (hybrid index: BM25 + k-NN, RRF fusion)
                                    │
                                    ▼
-   ┌───────────────────────────────────────────────────────────────────────────┐
-   │                          FastAPI Application                              │
-   │                                                                           │
-   │   /ping   /hybrid-search   /ask   /stream   /ask-agentic                  │
-   │                                          │                                │
-   │                              LangGraph Agentic Pipeline:                  │
-   │           guardrail → retrieve → grade_documents → rewrite_query          │
-   │                          → generate_answer → out_of_scope                 │
-   │                                          │                                │
-   │              Ollama (local LLM)   ◄──────┴──────►   Redis (query cache)   │
-   │                                          │                                │
-   │                                   Langfuse (tracing)                     │
+   ┌─────────────────────────────────────────────────────────────────────────┐
+   │                          FastAPI Application                            │
+   │                                                                         │
+   │   /ping   /hybrid-search   /ask   /stream   /ask-agentic                │
+   │                                          │                              │
+   │                              LangGraph Agentic Pipeline:                │
+   │           guardrail → retrieve → grade_documents → rewrite_query        │
+   │                          → generate_answer → out_of_scope               │
+   │                                          │                              │
+   │              Ollama (local LLM)   ◄──────┴──────►   Redis (query cache) │
+   │                                          │                              │
+   │                                   Langfuse (tracing)                    │
    └───────────────────┬───────────────────────────────────┬─────────────────┘
-                        │                                   │
-                 ┌──────▼──────┐                    ┌───────▼───────┐
-                 │  Gradio UI  │                    │  Telegram Bot │
-                 └─────────────┘                    └───────────────┘
+                       │                                   │
+                 ┌─────▼──────┐                    ┌───────▼───────┐
+                 │  Gradio UI │                    │  Telegram Bot │
+                 └────────────┘                    └───────────────┘
 ```
 
 ---
