@@ -7,7 +7,7 @@ help: ## Show this help message
 
 # Service management
 start: ## Start all services
-	docker compose up --build -d
+	docker compose up -d
 
 stop: ## Stop all services
 	docker compose down
