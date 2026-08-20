@@ -31,46 +31,6 @@ Fetches `cs.AI` papers from arXiv, parses and chunks them, indexes them for hybr
 ![Infrastructure Flowchart](images/flowcharts/1-infrastructure-topology.png)
 
 
-```
-                         ┌──────────────────────────────────────────────┐
-                         │                arXiv API                     │
-                         └───────────────────────┬──────────────────────┘
-                                                 │ fetch metadata + PDFs
-                                                 ▼
-                         ┌──────────────────────────────────────────────┐
-                         │   Airflow DAGs — fetch → parse → chunk →     │
-                         │   embed → index  (orchestration layer)       │
-                         └───────────────────────┬──────────────────────┘
-                                                 │
-                    ┌────────────────────────────┼─────────────────────────────┐
-                    ▼                            ▼                             ▼
-             Docling PDF Parser          Jina Embeddings API             PostgreSQL
-           (text + table extraction)      (1024-dim vectors)          (paper metadata)
-                    │                             │
-                    └──────────────┬──────────────┘
-                                   ▼
-                       OpenSearch (hybrid index: BM25 + k-NN, RRF fusion)
-                                   │
-                                   ▼
-   ┌─────────────────────────────────────────────────────────────────────────┐
-   │                          FastAPI Application                            │
-   │                                                                         │
-   │   /ping   /hybrid-search   /ask   /stream   /ask-agentic                │
-   │                                          │                              │
-   │                              LangGraph Agentic Pipeline:                │
-   │           guardrail → retrieve → grade_documents → rewrite_query        │
-   │                          → generate_answer → out_of_scope               │
-   │                                          │                              │
-   │              Ollama (local LLM)   ◄──────┴──────►   Redis (query cache) │
-   │                                          │                              │
-   │                                   Langfuse (tracing)                    │
-   └───────────────────┬───────────────────────────────────┬─────────────────┘
-                       │                                   │
-                 ┌─────▼──────┐                    ┌───────▼───────┐
-                 │  Gradio UI │                    │  Telegram Bot │
-                 └────────────┘                    └───────────────┘
-```
-
 ---
 
 ## 📁 Project Layout
