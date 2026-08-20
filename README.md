@@ -28,7 +28,7 @@ Fetches `cs.AI` papers from arXiv, parses and chunks them, indexes them for hybr
 
 ## 🏗️ Architecture
 
-![Infrastructure Flowchart](C:\Users\shubh\OneDrive\Documents\Axriv Paper Curator RAG\images\flowcharts\1-infrastructure-topology.png)
+![Infrastructure Flowchart](images/flowcharts/1-infrastructure-topology.png)
 
 
 ```
