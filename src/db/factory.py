@@ -1,14 +1,14 @@
 from src.config import get_settings
 from src.db.interfaces.base import BaseDatabase
-from src.db.interfaces.postgresql import PostgreSQLDatabase
-from src.schemas.database.config import PostgreSQLSettings
+from src.db.interfaces.postgresql import PostgreSQLDatabase, PostgreSQLSettings
 
 
 def make_database() -> BaseDatabase:
-    """Factory function to create a database instance.
+    """
+    Factory function to create a database instance.
 
-    :returns: An instance of the database
-    :rtype: BaseDatabase
+    Returns:
+        BaseDatabase: An instance of the database.
     """
     # Get settings from centralized config
     settings = get_settings()

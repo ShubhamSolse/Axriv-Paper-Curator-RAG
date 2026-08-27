@@ -4,10 +4,11 @@ from .client import ArxivClient
 
 
 def make_arxiv_client() -> ArxivClient:
-    """Factory function to create an arXiv client instance.
+    """
+    Factory function to create an arXiv client instance.
 
-    :returns: An instance of the arXiv client
-    :rtype: ArxivClient
+    Returns:
+        ArxivClient: An instance of the arXiv client.
     """
     # Get settings from centralized config
     settings = get_settings()
