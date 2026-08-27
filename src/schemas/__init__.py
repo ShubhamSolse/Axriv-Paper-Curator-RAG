@@ -1,16 +1,13 @@
-from .api.health import HealthResponse
-from .arxiv.paper import ArxivPaper, PaperCreate, PaperResponse, PaperSearchResponse
-from .pdf_parser.models import PaperFigure, PaperSection, PaperTable, ParsedPaper, ParserType
+from .ask import AskRequest, AskResponse, PaperSource
+from .health import HealthResponse
+from .paper import PaperCreate, PaperResponse, PaperSearchResponse
 
 __all__ = [
+    "AskRequest",
+    "AskResponse",
+    "PaperSource",
     "HealthResponse",
-    "ArxivPaper",
     "PaperCreate",
     "PaperResponse",
     "PaperSearchResponse",
-    "ParsedPaper",
-    "PaperSection",
-    "PaperFigure",
-    "PaperTable",
-    "ParserType",
 ]
