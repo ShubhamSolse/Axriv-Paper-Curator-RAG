@@ -1,14 +1,29 @@
 from functools import lru_cache
-from typing import Annotated, Generator
+from typing import TYPE_CHECKING, Annotated, Generator, Optional
 
-from fastapi import Depends, Request
+if TYPE_CHECKING:
+    from fastapi import Depends, Request
+    from sqlalchemy.orm import Session
+else:
+    try:
+        from fastapi import Depends, Request
+        from sqlalchemy.orm import Session
+    except ImportError:
+        pass
 
-# Week 1: Removed API key authentication for simplicity
-from sqlalchemy.orm import Session
 from src.config import Settings
 from src.db.interfaces.base import BaseDatabase
+from src.services.arxiv.client import ArxivClient
+from src.services.cache.client import CacheClient
+from src.services.embeddings.jina_client import JinaEmbeddingsClient
+from src.services.langfuse.client import LangfuseTracer
+from src.services.ollama.client import OllamaClient
+from src.services.opensearch.client import OpenSearchClient
+from src.services.pdf_parser.parser import PDFParserService
+from src.services.telegram.bot import TelegramBot
+from src.services.agents.agentic_rag import AgenticRAGService
+from src.services.agents.factory import make_agentic_rag_service
 
-# Week 1: Simplified - no API key authentication needed for local learning
 
 @lru_cache
 def get_settings() -> Settings:
@@ -32,30 +47,75 @@ def get_db_session(database: Annotated[BaseDatabase, Depends(get_database)]) -> 
         yield session
 
 
-# Week 2+: PDF parser service (not implemented in Week 1)
-def get_pdf_parser_service(request: Request):
-    """Get PDF parser service from app state (Week 2+ - not implemented yet)."""
-    return None
+def get_opensearch_client(request: Request) -> OpenSearchClient:
+    """Get OpenSearch client from the request state."""
+    return request.app.state.opensearch_client
 
 
-# Week 1: OpenSearch service (placeholder - full implementation in Week 3+)
-def get_opensearch_service(request: Request):
-    """Get OpenSearch service from app state (Week 3+ - placeholder for Week 1)."""
-    return getattr(request.app.state, "opensearch_service", None)
+def get_arxiv_client(request: Request) -> ArxivClient:
+    """Get arXiv client from the request state."""
+    return request.app.state.arxiv_client
 
 
-# Phase 3: LLM service (skeleton only)
-def get_llm_service(request: Request):
-    """Get LLM service from app state (Phase 3 - not implemented yet)."""
-    # Phase 3: Will return actual LLM service
-    return None
+def get_pdf_parser(request: Request) -> PDFParserService:
+    """Get PDF parser service from the request state."""
+    return request.app.state.pdf_parser
 
 
-# Dependency type aliases for better type hints
+def get_embeddings_service(request: Request) -> JinaEmbeddingsClient:
+    """Get embeddings service from the request state."""
+    return request.app.state.embeddings_service
+
+
+def get_ollama_client(request: Request) -> OllamaClient:
+    """Get Ollama client from the request state."""
+    return request.app.state.ollama_client
+
+
+def get_langfuse_tracer(request: Request) -> LangfuseTracer:
+    """Get Langfuse tracer from the request state."""
+    return request.app.state.langfuse_tracer
+
+
+def get_cache_client(request: Request) -> CacheClient | None:
+    """Get cache client from the request state."""
+    return getattr(request.app.state, "cache_client", None)
+
+
+def get_telegram_service(request: Request) -> Optional[TelegramBot]:
+    """Get Telegram service from the request state."""
+    return getattr(request.app.state, "telegram_service", None)
+
+
+# Dependency annotations
 SettingsDep = Annotated[Settings, Depends(get_settings)]
 DatabaseDep = Annotated[BaseDatabase, Depends(get_database)]
 SessionDep = Annotated[Session, Depends(get_db_session)]
-PDFParserServiceDep = Annotated[object, Depends(get_pdf_parser_service)]
-OpenSearchServiceDep = Annotated[object, Depends(get_opensearch_service)]
-# Phase 3: LLM service dependency (not used in Phase 2)
-# LLMServiceDep = Annotated[object, Depends(get_llm_service)]
+OpenSearchDep = Annotated[OpenSearchClient, Depends(get_opensearch_client)]
+ArxivDep = Annotated[ArxivClient, Depends(get_arxiv_client)]
+PDFParserDep = Annotated[PDFParserService, Depends(get_pdf_parser)]
+EmbeddingsDep = Annotated[JinaEmbeddingsClient, Depends(get_embeddings_service)]
+OllamaDep = Annotated[OllamaClient, Depends(get_ollama_client)]
+LangfuseDep = Annotated[LangfuseTracer, Depends(get_langfuse_tracer)]
+CacheDep = Annotated[CacheClient | None, Depends(get_cache_client)]
+TelegramDep = Annotated[Optional[TelegramBot], Depends(get_telegram_service)]
+
+
+def get_agentic_rag_service(
+    opensearch: OpenSearchDep,
+    ollama: OllamaDep,
+    embeddings: EmbeddingsDep,
+    langfuse: LangfuseDep,
+    settings: Annotated[Settings, Depends(get_settings)],
+) -> AgenticRAGService:
+    """Get agentic RAG service."""
+    return make_agentic_rag_service(
+        opensearch_client=opensearch,
+        ollama_client=ollama,
+        embeddings_client=embeddings,
+        langfuse_tracer=langfuse,
+        model=settings.ollama_model,
+    )
+
+
+AgenticRAGDep = Annotated[AgenticRAGService, Depends(get_agentic_rag_service)]
