@@ -347,7 +347,7 @@ services:
       - rag-network
 
   langfuse-minio:
-    image: docker.io/minio/minio
+    image: cgr.dev/chainguard/minio
     container_name: rag-langfuse-minio
     restart: unless-stopped
     entrypoint: sh
